@@ -15,7 +15,9 @@ Todo:
 function App() {
   const [data, setData] = useState([]);
   const [text, setText] = useState("");
-  const [reg, setReg] = useState(false);
+  const [selectedItems, setSelectedItems] = useState([]);
+
+  //console.log(data)
 
   function getPoke() {
     return new Promise((resolve, reject) => {
@@ -35,8 +37,18 @@ function App() {
     return el.name.includes(text);
   });
 
-  function onHide(e, i) {
-    console.log(e.target.checked);
+
+
+  const handleCheckbox= (event) => {
+    const { value, checked } = event.target;
+
+    if (checked) {
+      setSelectedItems((prevSelectedItems) => [...prevSelectedItems, value]);
+    } else {
+      setSelectedItems((prevSelectedItems) =>
+        prevSelectedItems.filter((item) => item !== value)
+      );
+    }
   }
 
   return (
@@ -45,13 +57,12 @@ function App() {
       <ul>
         {filteredData.map((p, i) => {
           return (
-            <li>
+            <li key={p.name}>
               <input
                 type="checkbox"
-                checked={false}
-                onChange={(e) => {
-                  onHide(e, i);
-                }}
+                value={p.name}
+                checked={selectedItems.includes(p.name)}
+                onChange={handleCheckbox}
               />
               {p.name}
             </li>
