@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import poke from "./utils/pokemon.json";
 /*
 Todo:
@@ -8,16 +8,13 @@ Todo:
  !Done!
 3.- add a search input to filter the pokemon by name !Done!
 4.- add a checkbox to mark the pokemon as registered !Done!
-5.- hide the registered pokemon from the list  !vamosAqui!!!!
-6.- add a button to mark all the pokemon as unregistered
+5.- hide the registered pokemon from the list  !vamosAqui!!!!  !Done!
+6.- add a button to mark all the pokemon as unregistered  !Done!
 */
 
 function App() {
   const [data, setData] = useState([]);
   const [text, setText] = useState("");
-  const [selectedItems, setSelectedItems] = useState([]);
-
-  //console.log(data)
 
   function getPoke() {
     return new Promise((resolve, reject) => {
@@ -27,41 +24,56 @@ function App() {
     });
   }
 
-  function renderList() {
+
+  useEffect(() => {
     getPoke().then((r) => {
-      setData(r);
+      let addField = r.map((it) => {
+        return { hide: false, ...it }
+      });
+      setData(addField);
     });
-  }
+  }, []);
+
 
   const filteredData = data.filter((el) => {
     return el.name.includes(text);
   });
 
 
+  const handleCheckbox = (e) => {
+    const { value, checked } = e.target;
+    // console.log(value);
+    // console.log(checked)
+    const updatedCheckedState = data.map((item, index) => {
+      if (item.name === value) {
+        console.log(value, item.name)
+        return { ...item, hide: e.target.checked }
+      }
+      return item
 
-  const handleCheckbox= (event) => {
-    const { value, checked } = event.target;
+    });
+    setData(updatedCheckedState);
+  }
 
-    if (checked) {
-      setSelectedItems((prevSelectedItems) => [...prevSelectedItems, value]);
-    } else {
-      setSelectedItems((prevSelectedItems) =>
-        prevSelectedItems.filter((item) => item !== value)
-      );
-    }
+  const unregister = () => {
+    let unreg = data.map((it) => {
+      return { ...it, hide: true }
+    });
+    setData(unreg);
   }
 
   return (
     <div className="App">
-      <input value={text} onChange={(e) => setText(e.target.value)} />
+      <input type="text" value={text} onChange={(e) => setText(e.target.value)} placeholder="Buscar..." />
       <ul>
         {filteredData.map((p, i) => {
+          const hide = p.hide ? { display: 'none' } : { display: 'block' }
           return (
-            <li key={p.name}>
+            <li key={p.name} style={hide}>
               <input
                 type="checkbox"
                 value={p.name}
-                checked={selectedItems.includes(p.name)}
+                checked={p.hide}
                 onChange={handleCheckbox}
               />
               {p.name}
@@ -69,7 +81,7 @@ function App() {
           );
         })}
       </ul>
-      {renderList()}
+      <button onClick={() => unregister()} ><b>Unregister all</b></button>
     </div>
   );
 }
